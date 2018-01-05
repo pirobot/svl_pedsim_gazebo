@@ -1,0 +1,8 @@
+*.pyc
+*~
+.*~
+.git
+.project
+.pydevproject
+
+
