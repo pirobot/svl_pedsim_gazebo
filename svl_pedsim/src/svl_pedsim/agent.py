@@ -12,11 +12,14 @@ from gazebo_msgs.srv import SpawnModel, SpawnModelRequest
 from std_srvs.srv import Empty
 from geometry_msgs.msg import Pose, Point, Quaternion
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
+from gazebo_ros import gazebo_interface as gazebo
 import uuid
 import os
 
 #rospy.wait_for_service('gazebo/pause_physics', Empty)
 #rospy.wait_for_service('gazebo/unpause_physics', Empty)
+
+physics = gazebo.ODEPhysics()
 
 pause_physics = rospy.ServiceProxy('gazebo/pause_physics', Empty)
 unpause_physics = rospy.ServiceProxy('gazebo/unpause_physics', Empty)
