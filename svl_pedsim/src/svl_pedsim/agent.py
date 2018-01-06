@@ -9,12 +9,14 @@
 import rospy
 from gazebo_msgs.msg import ModelState, ModelStates
 from gazebo_msgs.srv import SpawnModel, SpawnModelRequest
+from sensor_msgs.msg import LaserScan
 from std_srvs.srv import Empty
 from geometry_msgs.msg import Pose, Point, Quaternion
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 from gazebo_ros import gazebo_interface as gazebo
 import uuid
 import os
+from math import sin, cos, atan2, pi
 
 #rospy.wait_for_service('gazebo/pause_physics', Empty)
 #rospy.wait_for_service('gazebo/unpause_physics', Empty)
@@ -55,13 +57,38 @@ class Agent(object):
         os.system(spawn_command)
         unpause_physics()
         
+        self.lidar_msg = LaserScan()
+        self.lidar_sub = rospy.Subscriber("/person/scan", LaserScan, self.lidar_callback)
+        
     def set_goal(self, x, y, z=0):
         self.goal_x = x
         self.goal_y = y
         self.goal_z = z
         
-    def sum_forces(self):
-        pass
+    def lidar_callback(self, msg):
+        self.lidar_msg = msg
+        
+    def compute_forces(self):
+        sum_x = 0
+        sum_y = 0
+        
+        angle = self.lidar_msg.angle_max
+        
+        count = 0
+        
+        #print self.lidar_msg.ranges
+        
+        for distance in self.lidar_msg.ranges:
+            sum_x += distance * cos(angle)
+            sum_y += distance * sin(angle)
+            if count == 0:
+                direction = atan2(sum_y, sum_x)
+                print "FIRST DIRECTION", direction
+            angle -= self.lidar_msg.angle_increment
+            count = 1
+        
+        direction = atan2(sum_y, sum_x)
+        print "Direction", angle, direction
         
     def create_id(self):
         return uuid.uuid4()
